@@ -786,6 +786,19 @@ static void patchTemplateArgs(const std::string &TargetName,
   }
 }
 
+static void patchPrintOperandAddr(std::string &Decoder) {
+  bool ContainsAddress = Decoder.find("Address") != std::string::npos;
+  bool PrintOperand = Decoder.find("printOperand(") != std::string::npos;
+  bool PrintAdrLabelOperand = Decoder.find("printAdrLabelOperand") != std::string::npos;
+  if (ContainsAddress) {
+    if (PrintOperand) {
+      Decoder = Regex("printOperand\\(").sub("printOperandAddr(", Decoder);
+    } else if (PrintAdrLabelOperand) {
+      Decoder = Regex("printAdrLabelOperand").sub("printAdrLabelOperandAddr", Decoder);
+    }
+  }
+}
+
 std::string PrinterCapstone::translateToC(std::string const &TargetName,
                                           std::string const &Code) {
   std::string PatchedCode(Code);
@@ -793,6 +806,9 @@ std::string PrinterCapstone::translateToC(std::string const &TargetName,
   patchNullptr(PatchedCode);
   patchIsGetImmReg(PatchedCode);
   patchTemplateArgs(TargetName, PatchedCode);
+  if (TargetName == "ARM") {
+    patchPrintOperandAddr(PatchedCode);
+  }
   return PatchedCode;
 }
 
