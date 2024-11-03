@@ -3438,6 +3438,10 @@ void printInsnAliasEnum(CodeGenTarget const &Target,
     SmallVector<StringRef, 1> Matches;
     // Some Alias only differ by operands. Get only the mnemonic part.
     Regex("^[a-zA-Z0-9+-.]+").match(AliasAsm, &Matches);
+    if (Matches.empty()) {
+      continue;
+    }
+
     StringRef &AliasMnemonic = Matches[0];
     std::string NormAliasMnem = Target.getName().upper() + "_INS_ALIAS_" +
                                 normalizedMnemonic(AliasMnemonic);
