@@ -779,11 +779,13 @@ static void patchTemplateArgs(const std::string &TargetName,
     while ((Args.find("true") != std::string::npos) ||
            (Args.find("false") != std::string::npos) ||
            (Args.find(",") != std::string::npos) ||
-           (Args.find("'") != std::string::npos)) {
+           (Args.find("'") != std::string::npos) ||
+           (Args.find("-") != std::string::npos)) {
       Args = Regex("true").sub("1", Args);
       Args = Regex("false").sub("0", Args);
       Args = Regex(" *, *").sub("_", Args);
       Args = Regex("'").sub("", Args);
+      Args = Regex("-").sub("minus", Args);
     }
     Code = DecName + "_" + Args + Rest;
     E = Code.find(">");
