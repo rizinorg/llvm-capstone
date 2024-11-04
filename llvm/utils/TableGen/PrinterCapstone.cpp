@@ -2821,6 +2821,43 @@ std::string getArchSupplInfoLoongArch(StringRef const &TargetName,
   return "{ .loongarch = { 0, " + MemoryAccess + " }}";
 }
 
+std::string getArchSupplInfoXtensa(StringRef const &TargetName,
+                                   CodeGenInstruction const *CGI,
+                                   raw_string_ostream &OS) {
+  static std::set<std::string> Formats;
+  // Get instruction format
+  ArrayRef<std::pair<Record *, SMRange>> SCs = CGI->TheDef->getSuperClasses();
+  if (SCs.empty()) {
+    llvm_unreachable("A CGI without superclass should not exist.");
+  }
+
+  const Record *PrevSC = nullptr;
+  for (int I = SCs.size() - 1; I >= 0; --I) {
+    const Record *SC = SCs[I].first;
+    if (Regex("XtensaInst[0-9]+").match(SC->getName())) {
+      if (!PrevSC)
+        llvm_unreachable("I class has no predecessor.");
+      if (PrevSC->getName() == "Requires") {
+        break;
+      }
+
+      StringRef form = PrevSC->getName();
+      form.consume_front("Xtensa");
+      form.consume_back("_Inst");
+      std::string Format = "XTENSA_INSN_FORM_" + form.upper();
+      if (Formats.find(Format) == Formats.end()) {
+        OS << Format + ",\n";
+      }
+      Formats.emplace(Format);
+      return "{ .xtensa = { " + Format + " }}";
+    }
+    PrevSC = SC;
+  }
+
+  // Pseudo instructions
+  return "{{ 0 }}";
+}
+
 std::string getArchSupplInfo(StringRef const &TargetName,
                              CodeGenInstruction const *CGI,
                              raw_string_ostream &FormatEnum) {
@@ -2832,6 +2869,8 @@ std::string getArchSupplInfo(StringRef const &TargetName,
     return getArchSupplInfoLoongArch(TargetName, CGI, FormatEnum);
   } else if (StringRef(TargetName).upper() == "SYSTEMZ") {
     return getArchSupplInfoSystemZ(TargetName, CGI, FormatEnum);
+  } else if (StringRef(TargetName).upper() == "XTENSA") {
+    return getArchSupplInfoXtensa(TargetName, CGI, FormatEnum);
   }
   return "{{ 0 }}";
 }
