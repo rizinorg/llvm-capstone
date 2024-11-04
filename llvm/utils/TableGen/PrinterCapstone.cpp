@@ -3652,7 +3652,7 @@ void PrinterCapstone::asmMatcherEmitMatchTable(CodeGenTarget const &Target,
   writeFile(InsnMapFilename, AliasEnumStr);
   InsnMapFilename = TName + "GenCSAliasMnemMap.inc";
   writeFile(InsnMapFilename, AliasMnemMapStr);
-  if (TName == "PPC" || TName == "LoongArch" || TName == "SystemZ") {
+  if (TName == "PPC" || TName == "LoongArch" || TName == "SystemZ" || TName == "Xtensa") {
     InsnMapFilename = TName + "GenCSInsnFormatsEnum.inc";
     writeFile(InsnMapFilename, FormatEnumStr);
   }
