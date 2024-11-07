@@ -2729,6 +2729,21 @@ std::string getArchSupplInfoAArch64(CodeGenInstruction const *CGI) {
   return "{ .aarch64 = { .mem_acc = " + MemoryAccess + " }}";
 }
 
+std::string getArchSupplInfoARM(CodeGenInstruction const *CGI) {
+  // Compute memory access type
+  std::string MemoryAccess;
+  if (CGI->mayLoad && CGI->mayStore) {
+    MemoryAccess = "CS_AC_READ_WRITE";
+  } else if (CGI->mayLoad && !CGI->mayStore) {
+    MemoryAccess = "CS_AC_READ";
+  } else if (!CGI->mayLoad && CGI->mayStore) {
+    MemoryAccess = "CS_AC_WRITE";
+  } else {
+    MemoryAccess = "CS_AC_INVALID";
+  }
+  return "{ .aarch64 = { .mem_acc = " + MemoryAccess + " }}";
+}
+
 std::string getArchSupplInfoPPC(StringRef const &TargetName,
                                 CodeGenInstruction const *CGI,
                                 raw_string_ostream &PPCFormatEnum) {
@@ -2881,6 +2896,8 @@ std::string getArchSupplInfo(StringRef const &TargetName,
     return getArchSupplInfoPPC(TargetName, CGI, FormatEnum);
   } else if (StringRef(TargetName).upper() == "AARCH64") {
     return getArchSupplInfoAArch64(CGI);
+  } else if (StringRef(TargetName).upper() == "ARM") {
+    return getArchSupplInfoARM(CGI);
   } else if (StringRef(TargetName).upper() == "LOONGARCH") {
     return getArchSupplInfoLoongArch(TargetName, CGI, FormatEnum);
   } else if (StringRef(TargetName).upper() == "SYSTEMZ") {
