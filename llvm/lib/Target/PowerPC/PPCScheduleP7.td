@@ -6,7 +6,7 @@
 //
 //===----------------------------------------------------------------------===//
 //
-// This file defines the SchedModel for the POWER7 processor.
+// This file defines the itinerary class data for the POWER7 processor.
 //
 //===----------------------------------------------------------------------===//
 
@@ -116,17 +116,13 @@ let SchedModel = P7Model in {
     (instregex "^B(L)?(A)?(8)?(_NOP|_NOTOC)?(_TLS|_RM)?(_)?$")>;
 
   def : InstRW<[P7_BRU_3C, P7_DISP_BR], (instrs
-    BDZLRLp, BDZLRm, BDZLRp, BDZLm, BDZLp, BDZm, BDZp,
-    BDNZ, BDNZ8, BDNZA, BDNZAm, BDNZAp, BDNZL, BDNZLA, BDNZLAm, BDNZLAp, BDNZLR,
-    BDNZLR8, BDNZLRL, BDNZLRLm, BDNZLRLp, BDNZLRm, BDNZLRp, BDNZLm, BDNZLp,
-    BDNZm, BDNZp, BDZ, BDZ8, BDZA, BDZAm, BDZAp, BDZL, BDZLA, BDZLAm, BDZLAp,
-    BDZLR, BDZLR8, BDZLRL, BDZLRLm, BLR, BLR8, BLRL, BCL, BCLR, BCLRL, BCLRLn,
-    BCLRn, BCLalways, BCLn, BCTR, BCTR8, BCTRL, BCTRL8, BCTRL8_LDinto_toc,
+    BLR, BLR8, BLRL, BCL, BCLR, BCLRL,
+    BCTR, BCTR8, BCTRL, BCTRL8, BCTRL8_LDinto_toc,
     BCTRL8_LDinto_toc_RM, BCTRL8_RM, BCTRL_LWZinto_toc, BCTRL_LWZinto_toc_RM,
-    BCTRL_RM, BCn, BC, BCC, BCCA, BCCCTR, BCCCTR8, BCCCTRL, BCCCTRL8, BCCL,
-    BCCLA, BCCLR, BCCLRL, BCCTR, BCCTR8, BCCTR8n, BCCTRL, BCCTRL8,
+    BCTRL_RM, BC, BCC, BCCA, BCCCTR, BCCCTR8, BCCCTRL, BCCCTRL8, BCCL,
+    BCCLA, BCCLR, BCCLRL, BCCTR, BCCTR8, BCCTRL, BCCTRL8,
     BCCCTR, BCCCTR8, BCCCTRL, BCCCTRL8, BCCL, BCCLA, BCCLR, BCCLRL, BCCTR,
-    BCCTR8, BCCTR8n, BCCTRL, BCCTRL8, BCCTRL8n, BCCTRLn, BCCTRn, gBC, gBCA,
+    BCCTR8, BCCTRL, BCCTRL8, gBC, gBCA,
     gBCAat, gBCCTR, gBCCTRL, gBCL, gBCLA, gBCLAat, gBCLR, gBCLRL, gBCLat, gBCat,
     MFCTR, MFCTR8, MFLR, MFLR8
   )>;

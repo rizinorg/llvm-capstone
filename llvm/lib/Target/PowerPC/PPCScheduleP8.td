@@ -303,7 +303,6 @@ let SchedModel = P8Model in {
 
   def : InstRW<[P8_BR_2C, P8_ISSUE_BR], (instrs
     (instregex "^(g)?B(C)?(C)?(CTR)?(L)?(A)?(R)?(L)?(8)?(_LD|_LWZ)?(always|into_toc|at)?(_RM)?(n)?$"),
-    (instregex "^BD(N)?Z(L)?(R|A)?(L)?(m|p|8)?$"),
     (instregex "^BL(R|A)?(8)?(_NOP)?(_TLS)?(_)?(RM)?$"))>;
 
   // Instructions of DFP pipeline

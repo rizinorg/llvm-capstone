@@ -90,33 +90,12 @@ let isTerminator = 1, isBarrier = 1, PPC970_Unit = 7, hasSideEffects = 0 in {
     def BCCTR8  : XLForm_2_br2<19, 528, 12, 0, (outs), (ins crbitrc:$BI),
                                "bcctr 12, $BI, 0", IIC_BrB, []>,
         Requires<[In64BitMode]>;
-    def BCCTR8n : XLForm_2_br2<19, 528, 4, 0, (outs), (ins crbitrc:$BI),
-                               "bcctr 4, $BI, 0", IIC_BrB, []>,
-        Requires<[In64BitMode]>;
   }
 }
 
 let Defs = [LR8] in
   def MovePCtoLR8 : PPCEmitTimePseudo<(outs), (ins), "#MovePCtoLR8", []>,
                     PPC970_Unit_BRU;
-
-let isBranch = 1, isTerminator = 1, hasCtrlDep = 1, PPC970_Unit = 7, hasSideEffects = 0 in {
-  let Defs = [CTR8], Uses = [CTR8] in {
-    def BDZ8  : BForm_1<16, 18, 0, 0, (outs), (ins condbrtarget:$BD),
-                        "bdz $BD">;
-    def BDNZ8 : BForm_1<16, 16, 0, 0, (outs), (ins condbrtarget:$BD),
-                        "bdnz $BD">;
-  }
-
-  let isReturn = 1, Defs = [CTR8], Uses = [CTR8, LR8, RM] in {
-    def BDZLR8  : XLForm_2_ext<19, 16, 18, 0, 0, (outs), (ins),
-                              "bdzlr", IIC_BrB, []>;
-    def BDNZLR8 : XLForm_2_ext<19, 16, 16, 0, 0, (outs), (ins),
-                              "bdnzlr", IIC_BrB, []>;
-  }
-}
-
-
 
 let isCall = 1, PPC970_Unit = 7, Defs = [LR8], hasSideEffects = 0 in {
   // Convenient aliases for call instructions
@@ -170,9 +149,6 @@ let isCall = 1, PPC970_Unit = 7, Defs = [LR8], hasSideEffects = 0 in {
 
       def BCCTRL8  : XLForm_2_br2<19, 528, 12, 1, (outs), (ins crbitrc:$BI),
                                   "bcctrl 12, $BI, 0", IIC_BrB, []>,
-          Requires<[In64BitMode]>;
-      def BCCTRL8n : XLForm_2_br2<19, 528, 4, 1, (outs), (ins crbitrc:$BI),
-                                  "bcctrl 4, $BI, 0", IIC_BrB, []>,
           Requires<[In64BitMode]>;
     }
   }
