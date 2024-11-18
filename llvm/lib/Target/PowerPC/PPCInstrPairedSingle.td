@@ -21,7 +21,7 @@ def dispRID12 : Operand<iPTR> {
 }
 
 def memrid12 : Operand<iPTR> {  // Paired Single displacement where imm is 12 bits.
-  let PrintMethod = "printMemRegImm";
+  let PrintMethod = "printMemRegImmPS";
   let MIOperandInfo = (ops dispRID12:$imm, ptr_rc_nor0:$reg);
   let OperandType = "OPERAND_MEMORY";
 }
