@@ -33,14 +33,14 @@ class PSForm_qd<bits<6> op, dag OOL, dag IOL, string asmstr,
   bits<5> FRT;
   bit W;
   bits<3> I;
-  bits<12> d;
-  bits<5> A;
+  bits<12> IMM;
+  bits<5> RA;
 
   let Inst{6-10}  = FRT;
-  let Inst{11-15} = A;
+  let Inst{11-15} = RA;
   let Inst{16}    = W;
   let Inst{17-19} = I;
-  let Inst{20-31} = d;
+  let Inst{20-31} = IMM;
 }
 
 // PSForm_qi - Undocumented paired-singles quantized load/store form indexed.
@@ -48,14 +48,14 @@ class PSForm_qi<bits<6> psqop, dag OOL, dag IOL, string asmstr,
                 InstrItinClass itin>
     : I<4, OOL, IOL, asmstr, itin> {
   bits<5> FRT;
-  bits<5> A;
-  bits<5> B;
+  bits<5> RA;
+  bits<5> RB;
   bit W;
   bits<3> I;
 
   let Inst{6-10}  = FRT;
-  let Inst{11-15} = A;
-  let Inst{16-20} = B;
+  let Inst{11-15} = RA;
+  let Inst{16-20} = RB;
   let Inst{21}    = W;
   let Inst{22-24} = I;
   let Inst{25-30} = psqop;
@@ -116,12 +116,12 @@ class PSForm_c<bits<10> pszop, dag OOL, dag IOL, string asmstr,
 class DCBZL_Form<bits<10> xop, dag OOL, dag IOL, string asmstr,
                  InstrItinClass itin>
     : I<4, OOL, IOL, asmstr, itin> {
-  bits<5> A;
-  bits<5> B;
+  bits<5> RA;
+  bits<5> RB;
 
   let Inst{6-10}  = 0;
-  let Inst{11-15} = A;
-  let Inst{16-20} = B;
+  let Inst{11-15} = RA;
+  let Inst{16-20} = RB;
   let Inst{21-30} = xop;
   let Inst{31}    = 0;
 }
@@ -144,11 +144,11 @@ def PSQ_LU   : PSForm_qd<57,
                (outs f8rc:$FRT), (ins (memrid12 $IMM, $RA):$src, u1imm:$W, u3imm: $I),
                "psq_lu $FRT, $src, $W, $I", IIC_FPGeneral>;
 def PSQ_LX   : PSForm_qi<6,
-               (outs f8rc:$FRT), (ins gprc:$rA, gprc:$rB, u1imm:$W, u3imm: $I),
-               "psq_lx $FRT, $rA, $rB, $W, $I", IIC_FPGeneral>;
+               (outs f8rc:$FRT), (ins gprc:$RA, gprc:$RB, u1imm:$W, u3imm: $I),
+               "psq_lx $FRT, $RA, $RB, $W, $I", IIC_FPGeneral>;
 def PSQ_LUX  : PSForm_qi<38,
-               (outs f8rc:$FRT), (ins gprc:$rA, gprc:$rB, u1imm:$W, u3imm: $I),
-               "psq_lux $FRT, $rA, $rB, $W, $I", IIC_FPGeneral>;
+               (outs f8rc:$FRT), (ins gprc:$RA, gprc:$RB, u1imm:$W, u3imm: $I),
+               "psq_lux $FRT, $RA, $RB, $W, $I", IIC_FPGeneral>;
 }
 
 let mayStore = 1 in {
@@ -159,11 +159,11 @@ def PSQ_STU  : PSForm_qd<61,
                (outs), (ins f8rc:$FRT, (memrid12 $IMM, $RA):$dst, u1imm:$W, u3imm: $I),
                "psq_stu $FRT, $dst, $W, $I", IIC_FPGeneral>;
 def PSQ_STX  : PSForm_qi<7,
-               (outs), (ins f8rc:$FRT,gprc:$rA, gprc:$rB, u1imm:$W, u3imm: $I),
-               "psq_stx $FRT, $rA, $rB, $W, $I", IIC_FPGeneral>;
+               (outs), (ins f8rc:$FRT,gprc:$RA, gprc:$RB, u1imm:$W, u3imm: $I),
+               "psq_stx $FRT, $RA, $RB, $W, $I", IIC_FPGeneral>;
 def PSQ_STUX : PSForm_qi<39,
-               (outs), (ins f8rc:$FRT,gprc:$rA, gprc:$rB, u1imm:$W, u3imm: $I),
-               "psq_stux $FRT, $rA, $rB, $W, $I", IIC_FPGeneral>;
+               (outs), (ins f8rc:$FRT,gprc:$RA, gprc:$RB, u1imm:$W, u3imm: $I),
+               "psq_stux $FRT, $RA, $RB, $W, $I", IIC_FPGeneral>;
 }
 
 // op. FRT, FRA, FRC, FRB
@@ -325,17 +325,17 @@ defm PS_MADDS1 : PSForm_xr<15,
                       (outs f8rc:$FRT), (ins f8rc:$FRA, f8rc:$FRC, f8rc:$FRB),
                       "ps_madds1", "$FRT, $FRA, $FRC, $FRB", IIC_FPGeneral>;
 def PS_CMPU0 : PSForm_c<0,
-                      (outs crrc:$crD), (ins f8rc:$FRA, f8rc:$FRB),
-                      "ps_cmpu0 $crD, $FRA, $FRB", IIC_FPGeneral>;
+                      (outs crrc:$BF), (ins f8rc:$FRA, f8rc:$FRB),
+                      "ps_cmpu0 $BF, $FRA, $FRB", IIC_FPGeneral>;
 def PS_CMPO0 : PSForm_c<32,
-                      (outs crrc:$crD), (ins f8rc:$FRA, f8rc:$FRB),
-                      "ps_cmpo0 $crD, $FRA, $FRB", IIC_FPGeneral>;
+                      (outs crrc:$BF), (ins f8rc:$FRA, f8rc:$FRB),
+                      "ps_cmpo0 $BF, $FRA, $FRB", IIC_FPGeneral>;
 def PS_CMPU1 : PSForm_c<64,
-                      (outs crrc:$crD), (ins f8rc:$FRA, f8rc:$FRB),
-                      "ps_cmpu1 $crD, $FRA, $FRB", IIC_FPGeneral>;
+                      (outs crrc:$BF), (ins f8rc:$FRA, f8rc:$FRB),
+                      "ps_cmpu1 $BF, $FRA, $FRB", IIC_FPGeneral>;
 def PS_CMPO1 : PSForm_c<96,
-                      (outs crrc:$crD), (ins f8rc:$FRA, f8rc:$FRB),
-                      "ps_cmpo1 $crD, $FRA, $FRB", IIC_FPGeneral>;
+                      (outs crrc:$BF), (ins f8rc:$FRA, f8rc:$FRB),
+                      "ps_cmpo1 $BF, $FRA, $FRB", IIC_FPGeneral>;
 defm PS_MERGE00 : PSForm_yr<528,
                       (outs f8rc:$FRT), (ins f8rc:$FRA, f8rc:$FRB),
                       "ps_merge00", "$FRT, $FRA, $FRB", IIC_FPGeneral>;
@@ -350,8 +350,8 @@ defm PS_MERGE11 : PSForm_yr<624,
                       "ps_merge11", "$FRT, $FRA, $FRB", IIC_FPGeneral>;
 
 def PSC_DCBZL : DCBZL_Form<1014,
-                           (outs), (ins gprc:$rA, gprc:$rB),
-                           "dcbz_l $rA, $rB", IIC_FPGeneral>;
+                           (outs), (ins gprc:$RA, gprc:$RB),
+                           "dcbz_l $RA, $RB", IIC_FPGeneral>;
 
 }
 }
