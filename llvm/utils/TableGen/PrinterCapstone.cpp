@@ -3528,8 +3528,11 @@ void printInsnAliasEnum(CodeGenTarget const &Target,
                      getLLVMInstEnumName(Target.getName().upper(), RealInst) +
                      "\n";
 
+    bool ReplaceDotInMnemonic = Target.getName() == "PPC" ? false : true;
     AliasMnemMap << "\t{ " + NormAliasMnem + ", \"" +
-                        normalizedMnemonic(AliasMnemonic, false) + "\" },\n";
+                        normalizedMnemonic(AliasMnemonic,
+                                           false,
+                                           ReplaceDotInMnemonic) + "\" },\n";
   }
 }
 
