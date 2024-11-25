@@ -796,12 +796,14 @@ static void patchTemplateArgs(const std::string &TargetName,
 static void patchPrintOperandAddr(std::string &Decoder) {
   bool ContainsAddress = Decoder.find("Address") != std::string::npos;
   bool PrintOperand = Decoder.find("printOperand(") != std::string::npos;
-  bool PrintAdrLabelOperand = Decoder.find("printAdrLabelOperand") != std::string::npos;
+  bool PrintAdrLabelOperand =
+      Decoder.find("printAdrLabelOperand") != std::string::npos;
   if (ContainsAddress) {
     if (PrintOperand) {
       Decoder = Regex("printOperand\\(").sub("printOperandAddr(", Decoder);
     } else if (PrintAdrLabelOperand) {
-      Decoder = Regex("printAdrLabelOperand").sub("printAdrLabelOperandAddr", Decoder);
+      Decoder = Regex("printAdrLabelOperand")
+                    .sub("printAdrLabelOperandAddr", Decoder);
     }
   }
 }
@@ -2639,44 +2641,54 @@ std::string getImplicitDefs(StringRef const &TargetName,
   return Flags;
 }
 
-static inline std::string normalizedMnemonic(StringRef const &Mn,
-                                             const bool Upper = true,
-                                             const bool ReplaceDot = true) {
-  auto Mnemonic = Upper ? Mn.upper() : Mn.str();
-  if (ReplaceDot)
-    std::replace(Mnemonic.begin(), Mnemonic.end(), '.', '_');
-  std::replace(Mnemonic.begin(), Mnemonic.end(), '|', '_');
-  std::replace(Mnemonic.begin(), Mnemonic.end(), '+', 'p');
-  std::replace(Mnemonic.begin(), Mnemonic.end(), '-', 'm');
-  std::replace(Mnemonic.begin(), Mnemonic.end(), '/', 's');
+static inline std::string
+normalizedMnemonic(StringRef const &Mn, const bool Upper = true,
+                   const bool ReplaceDot = true,
+                   const StringRef RemovePattern = "") {
 
+  // Each tuple is: Regex Pattern : Replacement char
+  static SmallVector<std::tuple<std::string, std::string>> Replacements = {
+    {"[.]", "_"},
+    {"[|]", "_"},
+    {"[+]", "p"},
+    {"[-]", "m"},
+    {"[/]", "s"},
+    {"[{}]", "_"},
+  };
+
+  auto Mnemonic = Upper ? Mn.upper() : Mn.str();
   auto MnemRef = StringRef(Mnemonic);
-  if (MnemRef.count("{") == MnemRef.count("{")) {
-    // Some mnemonics have actually some {} in their name
-    // (to signal choice).
-    std::replace(Mnemonic.begin(), Mnemonic.end(), '{', '_');
-    std::replace(Mnemonic.begin(), Mnemonic.end(), '}', '_');
-  } else {
-    // Others just have a bracket which actually belongs to the
-    // operand string. But is their because of flawed td files.
-    while (MnemRef.contains("{") || MnemRef.contains("}")) {
-      MnemRef = StringRef(Regex("[{}]").sub("", MnemRef));
+
+  if (RemovePattern != "") {
+    while (Regex(RemovePattern).match(MnemRef)) {
+      MnemRef = StringRef(Regex(RemovePattern).sub("", MnemRef));
+    }
+  }
+
+  for (std::tuple Repl : Replacements) {
+    auto SearchPat = std::get<0>(Repl);
+    auto ReplaceStr = std::get<1>(Repl);
+    while (Regex(SearchPat).match(MnemRef)) {
+      if (!ReplaceDot && SearchPat == "[.]") {
+        continue;
+      }
+      MnemRef = StringRef(Regex(SearchPat).sub(ReplaceStr, MnemRef));
     }
   }
   return MnemRef.str();
 }
 
 static inline std::string
-getNormalMnemonic(std::unique_ptr<MatchableInfo> const &MI,
-                  const bool Upper = true) {
-  return normalizedMnemonic(MI->Mnemonic);
+getNormalMnemonic(StringRef TargetName, StringRef Mnemonic,
+                  const bool Upper = true, const bool ReplaceDot = true) {
+  StringRef RemovePattern = TargetName.equals_insensitive("ARM") ? "[{}]" : "";
+  return normalizedMnemonic(Mnemonic, Upper, ReplaceDot, RemovePattern);
 }
 
 std::string getReqFeatures(StringRef const &TargetName, AsmMatcherInfo &AMI,
                            std::unique_ptr<MatchableInfo> const &MI, bool UseMI,
                            CodeGenInstruction const *CGI) {
   std::string Flags = "{ ";
-  std::string Mn = getNormalMnemonic(MI);
   // The debug if
   if ((CGI->isBranch || CGI->isReturn) && !CGI->isCall) {
     Flags += TargetName.str() + "_GRP_JUMP, ";
@@ -3136,7 +3148,7 @@ void printInsnMapEntry(StringRef const &TargetName, AsmMatcherInfo &AMI,
   InsnMap.indent(2) << getLLVMInstEnumName(TargetName, CGI) << " /* " << InsnNum
                     << " */";
   InsnMap << ", " << TargetName.upper() << "_INS_"
-          << (UseMI ? getNormalMnemonic(MI) : "INVALID") << ",\n";
+          << (UseMI ? getNormalMnemonic(TargetName, MI->Mnemonic) : "INVALID") << ",\n";
   // no diet only
   InsnMap.indent(2) << "#ifndef CAPSTONE_DIET\n";
   if (UseMI) {
@@ -3295,7 +3307,7 @@ void printInsnOpMapEntry(
     // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=53119
     InsnOpMap << "{{{ /* " + LLVMEnum + " (" << InsnNum
               << ") - " + TargetName + "_INS_" +
-                     (UseMI ? getNormalMnemonic(MI) : "INVALID") + " - " +
+                     (UseMI ? getNormalMnemonic(TargetName, MI->Mnemonic) : "INVALID") + " - " +
                      CGI->AsmString + " */\n";
     InsnOpMap << " 0\n";
     InsnOpMap << "}}},\n";
@@ -3360,7 +3372,7 @@ void printInsnOpMapEntry(
   // Write the C struct of the Instruction operands.
   InsnOpMap << "{ /* " + LLVMEnum + " (" << InsnNum
             << ") - " + TargetName + "_INS_" +
-                   (UseMI ? getNormalMnemonic(MI) : "INVALID") + " - " +
+                   (UseMI ? getNormalMnemonic(TargetName, MI->Mnemonic) : "INVALID") + " - " +
                    CGI->AsmString + " */\n";
   InsnOpMap << "{\n";
   for (OpData const &OD : InsOps) {
@@ -3379,13 +3391,13 @@ void printInsnNameMapEnumEntry(StringRef const &TargetName,
   static std::set<std::string> MnemonicsSeen;
   static std::set<std::string> EnumsSeen;
 
-  const bool replace_dot = !TargetName.equals_insensitive("TriCore");
-  std::string Mnemonic = normalizedMnemonic(MI->Mnemonic, false, replace_dot);
+  const bool ReplaceDot = !TargetName.equals_insensitive("TriCore");
+  std::string Mnemonic = getNormalMnemonic(TargetName, MI->Mnemonic, false, ReplaceDot);
   if (MnemonicsSeen.find(Mnemonic) != MnemonicsSeen.end())
     return;
 
   std::string EnumName =
-      TargetName.str() + "_INS_" + normalizedMnemonic(StringRef(Mnemonic));
+      TargetName.str() + "_INS_" + getNormalMnemonic(TargetName, MI->Mnemonic);
   InsnNameMap.indent(2) << "\"" + Mnemonic + "\", // " + EnumName + "\n";
   if (EnumsSeen.find(EnumName) == EnumsSeen.end())
     InsnEnum.indent(2) << EnumName + ",\n";
@@ -3518,7 +3530,7 @@ void printInsnAliasEnum(CodeGenTarget const &Target,
 
     StringRef &AliasMnemonic = Matches[0];
     std::string NormAliasMnem = Target.getName().upper() + "_INS_ALIAS_" +
-                                normalizedMnemonic(AliasMnemonic);
+                                getNormalMnemonic(Target.getName(), AliasMnemonic);
     if (AliasMnemonicsSeen.find(NormAliasMnem) != AliasMnemonicsSeen.end())
       continue;
 
@@ -3528,11 +3540,11 @@ void printInsnAliasEnum(CodeGenTarget const &Target,
                      getLLVMInstEnumName(Target.getName().upper(), RealInst) +
                      "\n";
 
-    bool ReplaceDotInMnemonic = Target.getName() == "PPC" ? false : true;
+    bool ReplaceDotInMnemonic = Target.getName().equals_insensitive("PPC") ? false : true;
     AliasMnemMap << "\t{ " + NormAliasMnem + ", \"" +
-                        normalizedMnemonic(AliasMnemonic,
-                                           false,
-                                           ReplaceDotInMnemonic) + "\" },\n";
+                        getNormalMnemonic(Target.getName(), AliasMnemonic, false,
+                                           ReplaceDotInMnemonic) +
+                        "\" },\n";
   }
 }
 
@@ -3688,7 +3700,8 @@ void PrinterCapstone::asmMatcherEmitMatchTable(CodeGenTarget const &Target,
   writeFile(InsnMapFilename, AliasEnumStr);
   InsnMapFilename = TName + "GenCSAliasMnemMap.inc";
   writeFile(InsnMapFilename, AliasMnemMapStr);
-  if (TName == "PPC" || TName == "LoongArch" || TName == "SystemZ" || TName == "Xtensa") {
+  if (TName == "PPC" || TName == "LoongArch" || TName == "SystemZ" ||
+      TName == "Xtensa") {
     InsnMapFilename = TName + "GenCSInsnFormatsEnum.inc";
     writeFile(InsnMapFilename, FormatEnumStr);
   }
