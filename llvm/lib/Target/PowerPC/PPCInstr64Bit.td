@@ -592,7 +592,7 @@ let Interpretation64Bit = 1 in {
 let hasSideEffects = 0 in {
 let isCodeGenOnly = 1 in {
 
-let isReMaterializable = 1, isAsCheapAsAMove = 1, isMoveImm = 1 in {
+let isReMaterializable = 1, isAsCheapAsAMove = 1, isMoveImm = 1, isPseudo=1 in {
 def LI8  : DForm_2_r0<14, (outs g8rc:$RST), (ins s16imm64:$D),
                       "li $RST, $D", IIC_IntSimple,
                       [(set i64:$RST, imm64SExt16:$D)]>, SExt32To64;
