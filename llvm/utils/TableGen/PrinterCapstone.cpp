@@ -2668,10 +2668,10 @@ normalizedMnemonic(StringRef const &Mn, const bool Upper = true,
   for (std::tuple Repl : Replacements) {
     auto SearchPat = std::get<0>(Repl);
     auto ReplaceStr = std::get<1>(Repl);
+    if (!ReplaceDot && SearchPat == "[.]") {
+      continue;
+    }
     while (Regex(SearchPat).match(MnemRef)) {
-      if (!ReplaceDot && SearchPat == "[.]") {
-        continue;
-      }
       MnemRef = StringRef(Regex(SearchPat).sub(ReplaceStr, MnemRef));
     }
   }
