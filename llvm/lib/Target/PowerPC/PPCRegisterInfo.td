@@ -845,6 +845,7 @@ def crbitm: Operand<i8> {
   let EncoderMethod = "get_crbitm_encoding";
   let DecoderMethod = "decodeCRBitMOperand";
   let ParserMatchClass = PPCCRBitMaskOperand;
+  let OperandType = "OPERAND_REGISTER";
 }
 // Address operands
 // A version of ptr_rc which excludes R0 (or X0 in 64-bit mode).
