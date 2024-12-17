@@ -188,7 +188,7 @@ multiclass ArcBinaryInst<bits<5> major, bits<6> mincode,
 
   def _cc_f_rru6 : F32_DOP_CC_RRU6<major, mincode, 1, (outs GPR32:$A),
                                    (ins immU6:$U6, ccond:$cc, GPR32:$B),
-                                   !strconcat(opasm, ".$cc.f\t$A, $B, $U6"),
+                                   !strconcat(opasm, ".${cc}.f\t$A, $B, $U6"),
                                    []> {
                                      let Defs = [STATUS32];
                                      let Uses = [STATUS32];
@@ -405,7 +405,7 @@ let Uses = [STATUS32], isAsCheapAsAMove = 1, isPredicable=1,
 
   def MOV_cc_f_ru6 : F32_DOP_CC_RU6<0b00100, 0b001010, 1,
                     (outs GPR32:$B), (ins u6:$C, CCOp:$cc, GPR32:$B2),
-                    "mov.$cc.f\t$B, $C", []> {
+                    "mov.${cc}.f\t$B, $C", []> {
     let Defs = [STATUS32];
   }
 }

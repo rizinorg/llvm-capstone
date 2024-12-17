@@ -1105,11 +1105,12 @@ void PrinterCapstone::decoderEmitterEmitDecodeInstruction(
      << "  /* Bogisity detected in disassembler state machine! */ \\\n"
      << "}\n\n";
 
-  std::set<std::string> InsnBytesAsUint16 = {"ARM", "TriCore"};
+  std::set<std::string> InsnBytesAsUint16 = {"ARM", "TriCore", "ARC"};
   std::set<std::string> InsnBytesAsUint24 = {"Xtensa"};
   std::set<std::string> InsnBytesAsUint32 = {"ARM",   "AArch64", "LoongArch",
-                                             "Alpha", "Mips",    "TriCore"};
-  std::set<std::string> InsnBytesAsUint64 = {"SystemZ"};
+                                             "Alpha", "Mips",    "TriCore",
+                                             "ARC"};
+  std::set<std::string> InsnBytesAsUint64 = {"SystemZ", "ARC"};
   bool MacroDefined = false;
   if (InsnBytesAsUint16.find(TargetName) != InsnBytesAsUint16.end()) {
     OS << "FieldFromInstruction(fieldFromInstruction_2, uint16_t)\n"
@@ -2668,10 +2669,10 @@ normalizedMnemonic(StringRef const &Mn, const bool Upper = true,
   for (std::tuple Repl : Replacements) {
     auto SearchPat = std::get<0>(Repl);
     auto ReplaceStr = std::get<1>(Repl);
+    if (!ReplaceDot && SearchPat == "[.]") {
+      continue;
+    }
     while (Regex(SearchPat).match(MnemRef)) {
-      if (!ReplaceDot && SearchPat == "[.]") {
-        continue;
-      }
       MnemRef = StringRef(Regex(SearchPat).sub(ReplaceStr, MnemRef));
     }
   }

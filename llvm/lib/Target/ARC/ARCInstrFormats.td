@@ -53,6 +53,7 @@ def MEMrlimm : Operand<iAny> {
 
 def GPR32Reduced : Operand<iAny> {
   let DecoderMethod = "DecodeGBR32ShortRegister";
+  let OperandType = "OPERAND_REGISTER";
 }
 
 // Helper classes for load/store instructions

@@ -2235,7 +2235,7 @@ def SUBFIC : DForm_2< 8, (outs gprc:$RST), (ins gprc:$RA, s16imm:$D),
                      "subfic $RST, $RA, $D", IIC_IntGeneral,
                      [(set i32:$RST, (subc imm32SExt16:$D, i32:$RA))]>;
 
-let isReMaterializable = 1, isAsCheapAsAMove = 1, isMoveImm = 1 in {
+let isReMaterializable = 1, isAsCheapAsAMove = 1, isMoveImm = 1, isPseudo=1 in {
   def LI  : DForm_2_r0<14, (outs gprc:$RST), (ins s16imm:$D),
                        "li $RST, $D", IIC_IntSimple,
                        [(set i32:$RST, imm32SExt16:$D)]>, SExt32To64;
@@ -4322,31 +4322,31 @@ def ATTN : XForm_attn<0, 256, (outs), (ins), "attn", IIC_BrB>;
 
 let mayLoad = 1 in {
 def LBZCIX : XForm_base_r3xo_memOp<31, 853, (outs gprc:$RST),
-                                  (ins gprc:$RA, gprc:$RB),
+                                  (ins ptr_rc_nor0:$RA, ptr_rc_idx:$RB),
                                   "lbzcix $RST, $RA, $RB", IIC_LdStLoad, []>;
 def LHZCIX : XForm_base_r3xo_memOp<31, 821, (outs gprc:$RST),
-                                  (ins gprc:$RA, gprc:$RB),
+                                  (ins ptr_rc_nor0:$RA, ptr_rc_idx:$RB),
                                   "lhzcix $RST, $RA, $RB", IIC_LdStLoad, []>;
 def LWZCIX : XForm_base_r3xo_memOp<31, 789, (outs gprc:$RST),
-                                  (ins gprc:$RA, gprc:$RB),
+                                  (ins ptr_rc_nor0:$RA, ptr_rc_idx:$RB),
                                   "lwzcix $RST, $RA, $RB", IIC_LdStLoad, []>;
 def LDCIX :  XForm_base_r3xo_memOp<31, 885, (outs gprc:$RST),
-                                  (ins gprc:$RA, gprc:$RB),
+                                  (ins ptr_rc_nor0:$RA, ptr_rc_idx:$RB),
                                   "ldcix $RST, $RA, $RB", IIC_LdStLoad, []>;
 } // mayLoad = 1
 
 let mayStore = 1 in {
 def STBCIX : XForm_base_r3xo_memOp<31, 981, (outs),
-                                  (ins gprc:$RST, gprc:$RA, gprc:$RB),
+                                  (ins gprc:$RST, ptr_rc_nor0:$RA, ptr_rc_idx:$RB),
                                   "stbcix $RST, $RA, $RB", IIC_LdStLoad, []>;
 def STHCIX : XForm_base_r3xo_memOp<31, 949, (outs),
-                                  (ins gprc:$RST, gprc:$RA, gprc:$RB),
+                                  (ins gprc:$RST, ptr_rc_nor0:$RA, ptr_rc_idx:$RB),
                                   "sthcix $RST, $RA, $RB", IIC_LdStLoad, []>;
 def STWCIX : XForm_base_r3xo_memOp<31, 917, (outs),
-                                  (ins gprc:$RST, gprc:$RA, gprc:$RB),
+                                  (ins gprc:$RST, ptr_rc_nor0:$RA, ptr_rc_idx:$RB),
                                   "stwcix $RST, $RA, $RB", IIC_LdStLoad, []>;
 def STDCIX : XForm_base_r3xo_memOp<31, 1013, (outs),
-                                  (ins gprc:$RST, gprc:$RA, gprc:$RB),
+                                  (ins gprc:$RST, ptr_rc_nor0:$RA, ptr_rc_idx:$RB),
                                   "stdcix $RST, $RA, $RB", IIC_LdStLoad, []>;
 } // mayStore = 1
 
