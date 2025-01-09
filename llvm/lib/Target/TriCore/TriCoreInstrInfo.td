@@ -815,6 +815,12 @@ multiclass mI_U_RR_Eab<bits<8> op1, bits<8> op2, bits<8> op3, bits<8> op4,
   def _U_rr # posfix : IRR_dab<op3, op4, asmstr # ".u", RE>;
 }
 
+multiclass mI_U_RR_Eab_n<bits<8> op1, bits<8> op2, bits<8> op3, bits<8> op4, bits<2> n,
+                string asmstr, string posfix = "", RegisterClass RC1=RD, RegisterClass RC2=RD> {
+  def _rr   # posfix : IRR_dab_n<op1, op2, n, asmstr, RE, RC1, RC2>;
+  def _U_rr # posfix : IRR_dab_n<op3, op4, n, asmstr # ".u", RE, RC1, RC2>;
+}
+
 multiclass mIU_RR_Eab<bits<8> op1, bits<8> op2, bits<8> op3, bits<8> op4,
                 string asmstr, string posfix = ""> {
   def _rr  # posfix : IRR_dab<op1, op2, asmstr, RE>;
@@ -831,7 +837,9 @@ defm _B: mIU_RR_Eab <oprefix, opb, oprefix, opbu, asmstr # ".b", posfix>;
 defm _H: mIU_RR_Eab <oprefix, oph, oprefix, ophu, asmstr # ".h", posfix>;
 }
 
-defm DIV     : mI_U_RR_Eab<0x4B, 0x20, 0x4B, 0x21, "div">, Requires<[HasV160_UP]>;
+defm DIV     : mI_U_RR_Eab_n<0x4B, 0x20, 0x4B, 0x21, 0x1, "div">, Requires<[HasV160_UP]>;
+defm DIV64     : mI_U_RR_Eab_n<0x4B, 0x20, 0x4B, 0x21, 0x2, "div64", "", RE, RE>, Requires<[HasV180_UP]>;
+defm REM64     : mI_U_RR_Eab_n<0x4B, 0x34, 0x4B, 0x35, 0x2, "rem64", "", RE, RE>, Requires<[HasV180_UP]>;
 
 defm DVINIT : mI_DVINIT_<0x4F, 0x00, 0x01, 0x04, 0x05, 0x02, 0x03, "dvinit", "_v110">, NsRequires<[HasV110]>;
 defm DVINIT : mI_DVINIT_<0x4B, 0x1A, 0x0A, 0x5A, 0x4A, 0x3A, 0x2A, "dvinit">, Requires<[HasV120_UP]>;
