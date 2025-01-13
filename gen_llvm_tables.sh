@@ -1,6 +1,6 @@
 #!/bin/sh
 
-archs="AArch64 ARM PPC LoongArch Alpha"
+archs="AArch64 ARM PPC LoongArch Alpha TriCore"
 file_names="GenAsmWriter GenDisassemblerTables GenInstrInfo GenRegisterInfo GenSubtargetInfo GenSystemOperands"
 release="18"
 repo_root=$(git rev-parse --show-toplevel)
