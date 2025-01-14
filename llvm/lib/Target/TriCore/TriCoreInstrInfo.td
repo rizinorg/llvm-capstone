@@ -288,6 +288,10 @@ class IRR_a<bits<8> op1, bits<8> op2, string asmstr, RegisterClass cd=RD, Regist
     : RR<op1, op2, (outs cd:$d), (ins c1:$s1),
       asmstr # " $d, $s1", []>;
 
+class IRR_a_n<bits<8> op1, bits<8> op2, bits<2> n, string asmstr, RegisterClass cd=RD, RegisterClass c1=RD>
+    : RR_n<op1, op2, n, (outs cd:$d), (ins c1:$s1),
+      asmstr # " $d, $s1", []>;
+
 /// op R[c], R[b]
 class IRR_b<bits<8> op1, bits<8> op2, string asmstr, RegisterClass cd=RD, RegisterClass c2=RD>
     : RR<op1, op2, (outs cd:$d), (ins c2:$s1, c2:$s2),
@@ -298,9 +302,17 @@ class IRR_2<bits<8> op1, bits<8> op2, string asmstr
           , RegisterClass cd=RD, RegisterClass c1=RD, RegisterClass c2=RD>
     : RR<op1, op2, (outs cd:$d), (ins c1:$s1, c2:$s2), asmstr, []>;
 
+class IRR_2_n<bits<8> op1, bits<8> op2, bits<2> n, string asmstr
+          , RegisterClass cd=RD, RegisterClass c1=RD, RegisterClass c2=RD>
+    : RR_n<op1, op2, n, (outs cd:$d), (ins c1:$s1, c2:$s2), asmstr, []>;
+
 class IRR_dab<bits<8> op1, bits<8> op2, string asmstr,
               RegisterClass RCd=RD, RegisterClass RC1=RD, RegisterClass RC2=RD>
     : IRR_2<op1, op2, asmstr # " $d, $s1, $s2", RCd, RC1, RC2>;
+
+class IRR_dab_n<bits<8> op1, bits<8> op2, bits<2> n, string asmstr,
+              RegisterClass RCd=RD, RegisterClass RC1=RD, RegisterClass RC2=RD>
+    : IRR_2_n<op1, op2, n, asmstr # " $d, $s1, $s2", RCd, RC1, RC2>;
 
 class IRR_dba<bits<8> op1, bits<8> op2, string asmstr,
               RegisterClass RCd=RD, RegisterClass RC1=RD, RegisterClass RC2=RD>
@@ -593,9 +605,18 @@ class IRRR<bits<8>op1, bits<4> op2, string asmstr,
     : RRR<op1, op2, (outs RCd:$d), (ins RC1:$s1, RC2:$s2, RC3:$s3),
           asmstr # " $d, $s3, $s1, $s2", []>;
 
+class IRRR_n<bits<8>op1, bits<4> op2, bits<2> n, string asmstr,
+           RegisterClass RCd=RD, RegisterClass RC1=RD, RegisterClass RC2=RD, RegisterClass RC3=RD>
+    : RRR_n<op1, op2, n, (outs RCd:$d), (ins RC1:$s1, RC2:$s2, RC3:$s3),
+          asmstr # " $d, $s3, $s1, $s2", []>;
+
 class IRRR_d31<bits<8>op1, bits<4> op2, string asmstr,
              RegisterClass RCd=RD, RegisterClass RC1=RD, RegisterClass RC2=RD, RegisterClass RC3=RD>
     : RRR<op1, op2, (outs RCd:$d), (ins RC1:$s1, RC2:$s2, RC3:$s3), asmstr # " $d, $s3, $s1", []>;
+
+class IRRR_d31_n<bits<8>op1, bits<4> op2, bits<2> n, string asmstr,
+             RegisterClass RCd=RD, RegisterClass RC1=RD, RegisterClass RC2=RD, RegisterClass RC3=RD>
+    : RRR_n<op1, op2, n, (outs RCd:$d), (ins RC1:$s1, RC2:$s2, RC3:$s3), asmstr # " $d, $s3, $s1", []>;
 
 class IRRR_d32<bits<8>op1, bits<4> op2, string asmstr,
               RegisterClass RCd=RD, RegisterClass RC1=RD, RegisterClass RC2=RD, RegisterClass RC3=RD>
@@ -794,6 +815,12 @@ multiclass mI_U_RR_Eab<bits<8> op1, bits<8> op2, bits<8> op3, bits<8> op4,
   def _U_rr # posfix : IRR_dab<op3, op4, asmstr # ".u", RE>;
 }
 
+multiclass mI_U_RR_Eab_n<bits<8> op1, bits<8> op2, bits<8> op3, bits<8> op4, bits<2> n,
+                string asmstr, string posfix = "", RegisterClass RC1=RD, RegisterClass RC2=RD> {
+  def _rr   # posfix : IRR_dab_n<op1, op2, n, asmstr, RE, RC1, RC2>;
+  def _U_rr # posfix : IRR_dab_n<op3, op4, n, asmstr # ".u", RE, RC1, RC2>;
+}
+
 multiclass mIU_RR_Eab<bits<8> op1, bits<8> op2, bits<8> op3, bits<8> op4,
                 string asmstr, string posfix = ""> {
   def _rr  # posfix : IRR_dab<op1, op2, asmstr, RE>;
@@ -810,7 +837,9 @@ defm _B: mIU_RR_Eab <oprefix, opb, oprefix, opbu, asmstr # ".b", posfix>;
 defm _H: mIU_RR_Eab <oprefix, oph, oprefix, ophu, asmstr # ".h", posfix>;
 }
 
-defm DIV     : mI_U_RR_Eab<0x4B, 0x20, 0x4B, 0x21, "div">, Requires<[HasV160_UP]>;
+defm DIV     : mI_U_RR_Eab_n<0x4B, 0x20, 0x4B, 0x21, 0x1, "div">, Requires<[HasV160_UP]>;
+defm DIV64     : mI_U_RR_Eab_n<0x4B, 0x20, 0x4B, 0x21, 0x2, "div64", "", RE, RE>, Requires<[HasV180_UP]>;
+defm REM64     : mI_U_RR_Eab_n<0x4B, 0x34, 0x4B, 0x35, 0x2, "rem64", "", RE, RE>, Requires<[HasV180_UP]>;
 
 defm DVINIT : mI_DVINIT_<0x4F, 0x00, 0x01, 0x04, 0x05, 0x02, 0x03, "dvinit", "_v110">, NsRequires<[HasV110]>;
 defm DVINIT : mI_DVINIT_<0x4B, 0x1A, 0x0A, 0x5A, 0x4A, 0x3A, 0x2A, "dvinit">, Requires<[HasV120_UP]>;
@@ -1846,30 +1875,62 @@ defm XOR_LT_U : mIRR_RC<0x0B, 0x32, 0x8B, 0x32, "xor.lt.u">;
 
 /// FPU Instructions
 
-def MADD_F_rrr : IRRR<0x6B, 0x06, "madd.f">, Requires<[HasV130_UP]>;
-def MSUB_F_rrr : IRRR<0x6B, 0x07, "msub.f">, Requires<[HasV130_UP]>;
-def ADD_F_rrr : IRRR_d31<0x6B, 0x02, "add.f">, Requires<[HasV130_UP]>;
-def SUB_F_rrr : IRRR_d31<0x6B, 0x03, "sub.f">, Requires<[HasV130_UP]>;
-def MUL_F_rrr : IRR_dab<0x4B, 0x04, "mul.f">, Requires<[HasV130_UP]>;
-def DIV_F_rr  : IRR_dab<0x4B, 0x05, "div.f">, Requires<[HasV130_UP]>;
-def CMP_F_rr  : IRR_dab<0x4B, 0x00, "cmp.f">, Requires<[HasV130_UP]>;
+def MADD_F_rrr : IRRR_n<0x6B, 0x06, 0x1, "madd.f">, Requires<[HasV130_UP]>;
+def MSUB_F_rrr : IRRR_n<0x6B, 0x07, 0x1, "msub.f">, Requires<[HasV130_UP]>;
+def MADD_DF_rrr : IRRR_n<0x6B, 0x06, 0x2, "madd.df", RE, RE, RE, RE>, Requires<[HasV180_UP]>;
+def MSUB_DF_rrr : IRRR_n<0x6B, 0x07, 0x2, "msub.df", RE, RE, RE, RE>, Requires<[HasV180_UP]>;
+def ADD_F_rrr : IRRR_d31_n<0x6B, 0x02, 0x1, "add.f">, Requires<[HasV130_UP]>;
+def ADD_DF_rrr : IRRR_d31_n<0x6B, 0x02, 0x2, "add.df", RE, RE, RE, RE>, Requires<[HasV180_UP]>;
+def SUB_F_rrr : IRRR_d31_n<0x6B, 0x03, 0x1, "sub.f">, Requires<[HasV130_UP]>;
+def SUB_DF_rrr : IRRR_d31_n<0x6B, 0x03, 0x2, "sub.df", RE, RE, RE, RE>, Requires<[HasV180_UP]>;
+def MUL_F_rrr : IRR_dab_n<0x4B, 0x04, 0x01, "mul.f">, Requires<[HasV130_UP]>;
+def MUL_DF_rrr : IRR_dab_n<0x4B, 0x04, 0x02, "mul.df", RE, RE, RE>, Requires<[HasV180_UP]>;
+def DIV_F_rr  : IRR_dab_n<0x4B, 0x05, 0x01, "div.f">, Requires<[HasV130_UP]>;
+def DIV_DF_rr  : IRR_dab_n<0x4B, 0x05, 0x02, "div.df", RE, RE, RE>, Requires<[HasV180_UP]>;
+def CMP_F_rr  : IRR_dab_n<0x4B, 0x00, 0x01, "cmp.f">, Requires<[HasV130_UP]>;
+def CMP_DF_rr  : IRR_dab_n<0x4B, 0x00, 0x02, "cmp.df", RD, RE, RE>, Requires<[HasV180_UP]>;
+def MIN_F_rr  : IRR_dab_n<0x4B, 0x33, 0x01, "min.f">, Requires<[HasV180_UP]>;
+def MIN_DF_rr  : IRR_dab_n<0x4B, 0x33, 0x02, "min.df", RE, RE, RE>, Requires<[HasV180_UP]>;
+def MAX_F_rr  : IRR_dab_n<0x4B, 0x32, 0x01, "max.f">, Requires<[HasV180_UP]>;
+def MAX_DF_rr  : IRR_dab_n<0x4B, 0x32, 0x02, "max.df", RE, RE, RE>, Requires<[HasV180_UP]>;
 
-def FTOI_rr   : IRR_a<0x4B, 0x10, "ftoi">, Requires<[HasV130_UP]>;
-def FTOIZ_rr  : IRR_a<0x4B, 0x13, "ftoiz">, Requires<[HasV131_UP]>;
+def FTOI_rr   : IRR_a_n<0x4B, 0x10, 0x01, "ftoi">, Requires<[HasV130_UP]>;
+def DFTOI_rr   : IRR_a_n<0x4B, 0x10, 0x02, "dftoi", RD, RE>, Requires<[HasV180_UP]>;
+def FTOIZ_rr  : IRR_a_n<0x4B, 0x13, 0x01, "ftoiz">, Requires<[HasV131_UP]>;
+def DFTOIZ_rr   : IRR_a_n<0x4B, 0x13, 0x02, "dftoiz", RD, RE>, Requires<[HasV180_UP]>;
+def FTOIN_rr   : IRR_a_n<0x4B, 0x37, 0x01, "ftoin">, Requires<[HasV180_UP]>;
+def DFTOIN_rr   : IRR_a_n<0x4B, 0x37, 0x02, "dftoin", RD, RE>, Requires<[HasV180_UP]>;
+def DFTOL_rr   : IRR_a_n<0x4B, 0x1A, 0x02, "dftol", RE, RE>, Requires<[HasV180_UP]>;
+def DFTOLZ_rr   : IRR_a_n<0x4B, 0x1B, 0x02, "dftolz", RE, RE>, Requires<[HasV180_UP]>;
+def DFTOUL_rr   : IRR_a_n<0x4B, 0x1E, 0x02, "dftoul", RE, RE>, Requires<[HasV180_UP]>;
+def DFTOULZ_rr   : IRR_a_n<0x4B, 0x1F, 0x02, "dftoulz", RE, RE>, Requires<[HasV180_UP]>;
+def ABS_F_rr   : IRR_a_n<0x4B, 0x30, 0x01, "abs.f">, Requires<[HasV180_UP]>;
+def ABS_DF_rr   : IRR_a_n<0x4B, 0x30, 0x02, "abs.df", RE, RE>, Requires<[HasV180_UP]>;
+def NEG_F_rr   : IRR_a_n<0x4B, 0x31, 0x01, "neg.f">, Requires<[HasV180_UP]>;
+def NEG_DF_rr   : IRR_a_n<0x4B, 0x31, 0x02, "neg.df", RE, RE>, Requires<[HasV180_UP]>;
 
 def FTOQ31_rr : IRR_dab<0x4B, 0x11, "ftoq31">, Requires<[HasV130_UP]>;
 def FTOQ31Z_rr: IRR_dab<0x4B, 0x18, "ftoq31z">, Requires<[HasV131_UP]>;
 
-def FTOU_rr   : IRR_a<0x4B, 0x12, "ftou">, Requires<[HasV130_UP]>;
-def FTOUZ_rr  : IRR_a<0x4B, 0x17, "ftouz">, Requires<[HasV131_UP]>;
+def FTOU_rr   : IRR_a_n<0x4B, 0x12, 0x01, "ftou">, Requires<[HasV130_UP]>;
+def DFTOU_rr   : IRR_a_n<0x4B, 0x12, 0x02, "dftou", RD, RE>, Requires<[HasV180_UP]>;
+def FTOUZ_rr  : IRR_a_n<0x4B, 0x17, 0x01, "ftouz">, Requires<[HasV131_UP]>;
+def DFTOUZ_rr   : IRR_a_n<0x4B, 0x17, 0x02, "dftouz", RD, RE>, Requires<[HasV180_UP]>;
 
 def FTOHP_rr  : IRR_a<0x4B, 0x25, "ftohp">, Requires<[HasV162_UP]>;
 
 def HPTOF_rr  : IRR_a<0x4B, 0x24, "hptof">, Requires<[HasV162_UP]>;
-def ITOF_rr   : IRR_a<0x4B, 0x14, "itof">, Requires<[HasV130_UP]>;
+def ITOF_rr   : IRR_a_n<0x4B, 0x14, 0x01, "itof">, Requires<[HasV130_UP]>;
+def ITODF_rr   : IRR_a_n<0x4B, 0x14, 0x02, "itodf", RE, RD>, Requires<[HasV180_UP]>;
 
 def Q31TOF_rr  : IRR_dab<0x4B, 0x15, "q31tof">, Requires<[HasV130_UP]>;
-def QSEED_F_rr : IRR_a<0x4B, 0x19, "qseed.f">, Requires<[HasV130_UP]>;
+def QSEED_F_rr : IRR_a_n<0x4B, 0x19, 0x01, "qseed.f">, Requires<[HasV130_UP]>;
+def QSEED_DF_rr : IRR_a_n<0x4B, 0x19, 0x02, "qseed.df", RE, RE>, Requires<[HasV180_UP]>;
 
 def UPDFL_rr   : IRR_R1<0x4B, 0x0C, "updfl">, Requires<[HasV130_UP]>;
-def UTOF_rr    : IRR_a<0x4B, 0x16, "utof">, Requires<[HasV130_UP]>;
+def UTOF_rr    : IRR_a_n<0x4B, 0x16, 0x01, "utof">, Requires<[HasV130_UP]>;
+def UTODF_rr   : IRR_a_n<0x4B, 0x16, 0x02, "utodf", RE, RD>, Requires<[HasV180_UP]>;
+def LTODF_rr   : IRR_a_n<0x4B, 0x26, 0x02, "ltodf", RE, RE>, Requires<[HasV180_UP]>;
+def ULTODF_rr   : IRR_a_n<0x4B, 0x27, 0x02, "ultodf", RE, RE>, Requires<[HasV180_UP]>;
+def DFTOF_rr   : IRR_a_n<0x4B, 0x28, 0x02, "dftof", RD, RE>, Requires<[HasV180_UP]>;
+def FTODF_rr   : IRR_a_n<0x4B, 0x29, 0x02, "ftodf", RE, RD>, Requires<[HasV180_UP]>;

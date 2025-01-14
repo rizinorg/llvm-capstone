@@ -30,7 +30,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-class InstTriCore<dag outs, dag ins, string asmstr, list<dag> pattern>
+class I<dag outs, dag ins, string asmstr, list<dag> pattern>
     : Instruction {
 
   let Namespace = "TriCore";
@@ -43,7 +43,7 @@ class InstTriCore<dag outs, dag ins, string asmstr, list<dag> pattern>
 
 // TriCore pseudo instructions format
 class Pseudo<dag outs, dag ins, string asmstr, list<dag> pattern>
-   : InstTriCore<outs, ins, asmstr, pattern> {
+   : I<outs, ins, asmstr, pattern> {
   let isPseudo = 1;
 }
 
@@ -51,7 +51,7 @@ class Pseudo<dag outs, dag ins, string asmstr, list<dag> pattern>
 // Generic 16-bit Instruction Format
 //===----------------------------------------------------------------------===//
 class T16<dag outs, dag ins, string asmstr, list<dag> pattern>
-    : InstTriCore<outs, ins, asmstr, pattern> {
+    : I<outs, ins, asmstr, pattern> {
   field bits<16> Inst;
   let Size = 2;
   field bits<16> SoftFail = 0;
@@ -61,7 +61,7 @@ class T16<dag outs, dag ins, string asmstr, list<dag> pattern>
 // Generic 32-bit Instruction Format
 //===----------------------------------------------------------------------===//
 class T32<dag outs, dag ins, string asmstr, list<dag> pattern>
-    : InstTriCore<outs, ins, asmstr, pattern> {
+    : I<outs, ins, asmstr, pattern> {
   field bits<32> Inst;
   let Size = 4;
   field bits<32> SoftFail = 0;
@@ -569,23 +569,33 @@ class RLC<bits<8> op1, dag outs, dag ins, string asmstr,
 //===----------------------------------------------------------------------===//
 // 32-bit RR Instruction Format: <d|op2|-|n|s2|s1|op1>
 //===----------------------------------------------------------------------===//
-class RR<bits<8> op1, bits<8> op2, dag outs, dag ins, string asmstr,
+class RRBase<bits<8> op1, bits<8> op2, dag outs, dag ins, string asmstr,
                  list<dag> pattern> : T32<outs, ins, asmstr, pattern> {
 
   bits<4> d;
-  bits<2> n;
   bits<4> s2;
   bits<4> s1;
 
   let Inst{31-28} = d;
   let Inst{27-20} = op2;
   let Inst{19-18} = 0;
-  let Inst{17-16} = n;
   let Inst{15-12} = s2;
   let Inst{11-8} = s1;
   let Inst{7-0} = op1;
   let DecoderMethod = "DecodeRRInstruction";
 }
+
+class RR<bits<8> op1, bits<8> op2, dag outs, dag ins, string asmstr,
+                 list<dag> pattern>: RRBase<op1, op2, outs, ins, asmstr, pattern> {
+  bits<2> n;
+  let Inst{17-16} = n;
+}
+
+class RR_n<bits<8> op1, bits<8> op2, bits<2> n, dag outs, dag ins, string asmstr,
+                 list<dag> pattern>: RRBase<op1, op2, outs, ins, asmstr, pattern> {
+  let Inst{17-16} = n;
+}
+
 
 //===----------------------------------------------------------------------===//
 // 32-bit RR1 Instruction Format: <d|op2|n|s2|s1|op1>
@@ -651,12 +661,11 @@ class RRPW<bits<8> op1, bits<2> op2, dag outs, dag ins, string asmstr,
 //===----------------------------------------------------------------------===//
 // 32-bit RRR Instruction Format: <d|s3|op2|-|n|s2|s1|op1>
 //===----------------------------------------------------------------------===//
-class RRR<bits<8> op1, bits<4> op2, dag outs, dag ins, string asmstr,
+class RRRBase<bits<8> op1, bits<4> op2, dag outs, dag ins, string asmstr,
                 list<dag> pattern> : T32<outs, ins, asmstr, pattern> {
 
   bits<4> d;
   bits<4> s3;
-  bits<2> n;
   bits<4> s2;
   bits<4> s1;
 
@@ -664,11 +673,24 @@ class RRR<bits<8> op1, bits<4> op2, dag outs, dag ins, string asmstr,
   let Inst{27-24} = s3;
   let Inst{23-20} = op2;
   let Inst{19-18} = 0;
-  let Inst{17-16} = n;
   let Inst{15-12} = s2;
   let Inst{11-8} = s1;
   let Inst{7-0} = op1;
   let DecoderMethod = "DecodeRRRInstruction";
+}
+
+class RRR<bits<8> op1, bits<4> op2, dag outs, dag ins, string asmstr,
+                list<dag> pattern> : RRRBase<op1, op2, outs, ins, asmstr, pattern> {
+
+  bits<2> n;
+
+  let Inst{17-16} = n;
+}
+
+class RRR_n<bits<8> op1, bits<4> op2, bits<2> n, dag outs, dag ins, string asmstr,
+                list<dag> pattern> : RRRBase<op1, op2, outs, ins, asmstr, pattern> {
+
+  let Inst{17-16} = n;
 }
 
 //===----------------------------------------------------------------------===//
