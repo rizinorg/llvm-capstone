@@ -70,7 +70,7 @@ def HasV161_UP  : Predicate<"HasV161Ops() || HasV162Ops() || HasV180Ops()">
 				, AssemblerPredicate<(any_of HasV161Ops, HasV162Ops, HasV180Ops), "v161up">;
 def HasV162_UP  : Predicate<"HasV162Ops() || HasV180Ops()">
 				, AssemblerPredicate<(any_of HasV162Ops, HasV180Ops), "v162up">;
-def HasV180_UP  : Predicate<"HasV162Ops()">
+def HasV180_UP  : Predicate<"HasV180Ops()">
 				, AssemblerPredicate<(any_of HasV180Ops), "v180up">;
 
 def HasV120_DN : Predicate<"HasV120Ops() || HasV110Ops()">,
@@ -86,7 +86,7 @@ def HasV161_DN : Predicate<"HasV161Ops() || HasV160Ops() || HasV131Ops() || HasV
 def HasV162_DN : Predicate<"HasV162Ops() || HasV161Ops() || HasV160Ops() || HasV131Ops() || HasV130Ops() || HasV120Ops() || HasV110Ops()">,
 				AssemblerPredicate<(any_of HasV162Ops, HasV161Ops, HasV160Ops, HasV131Ops, HasV130Ops, HasV120Ops, HasV110Ops), "v162dn">;
 def HasV180_DN : Predicate<"HasV180Ops() || HasV162Ops() || HasV161Ops() || HasV160Ops() || HasV131Ops() || HasV130Ops() || HasV120Ops() || HasV110Ops()">,
-				AssemblerPredicate<(any_of HasV180Ops, HasV162Ops, HasV161Ops, HasV160Ops, HasV131Ops, HasV130Ops, HasV120Ops, HasV110Ops), "v162dn">;
+				AssemblerPredicate<(any_of HasV180Ops, HasV162Ops, HasV161Ops, HasV160Ops, HasV131Ops, HasV130Ops, HasV120Ops, HasV110Ops), "v180dn">;
 
 
 class Architecture<string fname, string aname, list<SubtargetFeature> features = []>
@@ -104,7 +104,7 @@ def TRICORE_V1_3_1  : Architecture<"tricore-V1.3.1",  "TRICOREv131", [HasV131Ops
 def TRICORE_V1_6    : Architecture<"tricore-V1.6",    "TRICOREv160", [HasV160Ops]>;
 def TRICORE_V1_6_1  : Architecture<"tricore-V1.6.1",  "TRICOREv161", [HasV161Ops]>;
 def TRICORE_V1_6_2  : Architecture<"tricore-V1.6.2",  "TRICOREv162", [HasV162Ops]>;
-def TRICORE_V1_8_0  : Architecture<"tricore-V1.8.0",  "TRICOREv162", [HasV180Ops]>;
+def TRICORE_V1_8_0  : Architecture<"tricore-V1.8.0",  "TRICOREv180", [HasV180Ops]>;
 def TRICORE_PCP     : Architecture<"tricore-PCP",     "TRICOREpcp">;
 def TRICORE_PCP2    : Architecture<"tricore-PCP2",    "TRICOREpcp2">;
 
