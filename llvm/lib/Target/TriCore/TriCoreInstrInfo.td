@@ -378,6 +378,7 @@ class NsRequires<list<Predicate> Ps> : Requires<Ps> {
                                   !eq(HasV160, !head(Ps)): "v160",
                                   !eq(HasV161, !head(Ps)): "v161",
                                   !eq(HasV162, !head(Ps)): "v162",
+                                  !eq(HasV180, !head(Ps)): "v180",
                                   true: "");
 }
 
@@ -539,7 +540,6 @@ defm ANDN     : mIRR_RC<0x0F, 0x0E, 0x8F, 0x0E, "andn">;
 
 /// BISR
 def BISR_rc : IRC_C<0xAD, 0x00, "bisr">;
-def BISR_rc_v161 : IRC_C<0xAD, 0x01, "bisr">, NsRequires<[HasV161]>;
 
 def BISR_sc_v110 : ISC_C<0xC0, "bisr">, NsRequires<[HasV110]>;
 def BISR_sc : ISC_C<0xE0, "bisr">, Requires<[HasV120_UP]>;
@@ -742,10 +742,10 @@ defm CMPSWAP_W : mIBO_Ea<0x49, 0x23, 0x69, 0x03,
                          0x49, 0x13, "cmpswap.w">
                , Requires<[HasV161_UP]>;
 
-def CRC32_B_rr  : IRR_dba<0x4B, 0x06, "crc32.b">, Requires<[HasV162]>;
-def CRC32B_W_rr : IRR_dba<0x4B, 0x03, "crc32b.w">, Requires<[HasV162]>;
-def CRC32L_W_rr : IRR_dba<0x4B, 0x07, "crc32l.w">, Requires<[HasV162]>;
-def CRCN_rrr    : IRRR<0x6B, 0x01, "crcn">, Requires<[HasV162]>;
+def CRC32_B_rr  : IRR_dba<0x4B, 0x06, "crc32.b">, Requires<[HasV162_UP]>;
+def CRC32B_W_rr : IRR_dba<0x4B, 0x03, "crc32b.w">, Requires<[HasV162_UP]>;
+def CRC32L_W_rr : IRR_dba<0x4B, 0x07, "crc32l.w">, Requires<[HasV162_UP]>;
+def CRCN_rrr    : IRRR<0x6B, 0x01, "crcn">, Requires<[HasV162_UP]>;
 
 def CSUB_rrr    : IRRR<0x2B, 0x02, "csub">;
 def CSUBN_rrr   : IRRR<0x2B, 0x03, "csubn">;
@@ -1547,9 +1547,7 @@ multiclass mISR_1<bits<8> sr1op1, bits<4> sr1op2, bits<8> sr2op1, bits<4> sr2op2
 defm NOR : mIRR_RC<0x0F, 0x0B, 0x8F, 0x0B, "nor">;
 def NOR_T : IBIT<0x87, 0x02, "nor.t">;
 
-defm NOR : mISR_1<0x46, 0x00, 0x36, 0x00, "nor">;
-
-def NOT_sr_v162 : ISR_1<0x46, 0x00, "not">, NsRequires<[HasV162]>;
+def NOT_sr : ISR_1<0x46, 0x00, "not">, Requires<[HasV120_UP]>;
 
 
 defm OR : mIRR_RC<0x0F, 0x0A, 0x8F, 0x0A, "or", RD, RD, u9imm>;
@@ -1587,7 +1585,7 @@ multiclass mISYS_0<bits<8> sys1op1, bits<6> sys1op2, bits<8> sys2op1, bits<6> sy
 def PARITY_rr : IRR_a<0x4B, 0x02, "parity">, Requires<[HasV120_UP]>;
 def PARITY_rr_v110 : IRR_a<0x4B, 0x08, "parity">, NsRequires<[HasV110]>;
 
-def POPCNT_W_rr : IRR_a<0x4B, 0x22, "popcnt.w">, NsRequires<[HasV162]>;
+def POPCNT_W_rr : IRR_a<0x4B, 0x22, "popcnt.w">, NsRequires<[HasV162_UP]>;
 
 def RESTORE_sys : ISYS_1<0x0D, 0x0E, "restore">, Requires<[HasV160_UP]>;
 
@@ -1664,7 +1662,7 @@ defm SHA_B : mIRR_RC<0x0F, 0x21, 0x8F, 0x21, "sha.b">, NsRequires<[HasV110]>;
 defm SHA_H : mIRR_RC<0x0F, 0x41, 0x8F, 0x41, "sha.h">;
 defm SHAS : mIRR_RC<0x0F, 0x02, 0x8F, 0x02, "shas">;
 
-def SHUFFLE_rc : IRC<0x8F, 0x07, "shuffle">, Requires<[HasV162]>;
+def SHUFFLE_rc : IRC<0x8F, 0x07, "shuffle">, Requires<[HasV162_UP]>;
 
 // A[b], off10, A[a] (BO)(Base + Short Offset Addressing Mode)
 class IBO_bso_st<bits<8> op1, bits<6> op2, string asmstr, RegisterClass RC> 
